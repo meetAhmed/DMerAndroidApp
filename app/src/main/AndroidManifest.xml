@@ -18,12 +18,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DMer"
         tools:ignore="AllowBackup">
-        <activity android:name=".activities.SharedImagesActivity"/>
+        <activity android:name="com.d.mer.ui.activities.SharedImagesActivity"/>
         <activity
-            android:name=".activities.CreateAccountActivity"
+            android:name="com.d.mer.ui.activities.CreateAccountActivity"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name=".activities.LoginActivity"
+            android:name="com.d.mer.ui.activities.LoginActivity"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,9 +31,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.FullScreenActivity" />
+        <activity android:name="com.d.mer.ui.activities.FullScreenActivity" />
         <activity
-            android:name=".activities.MainActivity"
+            android:name="com.d.mer.ui.activities.MainActivity"
             android:configChanges="orientation|screenSize" />
 
         <provider
