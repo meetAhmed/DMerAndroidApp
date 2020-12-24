@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "608963444949",
+    "firebase_url": "https://d-mer-6cb58.firebaseio.com",
+    "project_id": "d-mer-6cb58",
+    "storage_bucket": "d-mer-6cb58.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:608963444949:android:c17ff0dfa697d40652a25c",
+        "android_client_info": {
+          "package_name": "com.d.mer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "608963444949-pfuottf07gm4ibapuju522keq927fscn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCyPO7C2fyQKh5Eek-S5anfbjeKOoHDzo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "608963444949-pfuottf07gm4ibapuju522keq927fscn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,45 @@
+<resources>
+    <string name="app_name">D Mer</string>
+    <string name="image_place_holder_text">Image Here</string>
+    <string name="apply_filter">Apply Filter</string>
+    <string name="filter">Filter</string>
+    <string name="email_address">Email Address</string>
+    <string name="valid_email_address_required">Please enter valid email address</string>
+    <string name="password">Password</string>
+    <string name="valid_password_required">Please enter valid password</string>
+    <string name="sign_in">Sign In</string>
+    <string name="do_not_have_account">Don\'t have account ?</string>
+    <string name="register_now">Register now</string>
+    <string name="full_name">Full Name</string>
+    <string name="ok">OK</string>
+    <string name="sign_in_successful">"Sign In successfully"</string>
+    <string name="invalid_password">Password is invalid</string>
+    <string name="no_user_found">User does not exist with this email</string>
+    <string name="valid_name_required">Please enter valid name</string>
+    <string name="registered_successfully">Registered successfully</string>
+    <string name="failed_to_download_image">Failed to download image</string>
+
+    <string name="downloading_image_dialog_message">Saving Image - Please wait</string>
+    <string name="login_loading_dialog_message">Accessing Account - Please wait</string>
+    <string name="register_loading_dialog_message">Registering Account - Please wait</string>
+    <string name="clearing_images_dialog_message">Clearing Images - Please wait</string>
+
+    <string name="storage_permission_message">We need your permissions for the proper working of app.</string>
+    <string name="request_again">Request Again</string>
+    <string name="cancel">Cancel</string>
+    <string name="shared_images">Shared Images</string>
+    <string name="log_out">Log out</string>
+    <string name="clear_all">Clear all</string>
+    <string name="deleted_successfully">Images cleared successfully</string>
+    <string name="some_thing_went_wrong">Oops\nSomething went wrong!</string>
+
+    <string name="no_image_shares">Image was not shared by any user.</string>
+    <string name="end_timer">End Timer</string>
+    <string name="share_image">Share Image</string>
+    <string name="result">Result: %1$s</string>
+    <string name="timer_ended">Timer Ended</string>
+    <string name="search">Search</string>
+
+    <string name="file_provider_name" translatable="false">.fileProvider</string>
+
+</resources>
