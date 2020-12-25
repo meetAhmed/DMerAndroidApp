@@ -6,13 +6,12 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.d.mer.R
 import com.d.mer.data.firestore.FireStoreReferences
-import com.d.mer.ui.activities.MainActivity
+import com.d.mer.ui.activities.LoginActivity
 import com.d.mer.ui.common.Constants
 import com.d.mer.ui.common.Logger
 import com.d.mer.ui.common.PreferenceManager
@@ -50,7 +49,8 @@ class FirebaseMessagingService : FirebaseMessagingService() {
                 }
 
                 Constants.TO_WINNER -> {
-
+                    val imageNodeAddress = remoteMessage.data["imageNodeAddress"] ?: ""
+                    notificationDialog(title, message, this, reqCode, time, imageNodeAddress)
                 }
 
             }
@@ -65,7 +65,8 @@ class FirebaseMessagingService : FirebaseMessagingService() {
         text: String,
         context: Context,
         reqCode: Int,
-        time: String
+        time: String,
+        imageNodeAddress: String = ""
     ) {
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -74,10 +75,15 @@ class FirebaseMessagingService : FirebaseMessagingService() {
             createNotificationChannel()
         } else ""
 
-        val intent = Intent(context, MainActivity::class.java)
+        val intent = Intent(context, LoginActivity::class.java)
+
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+
+        intent.putExtra("imageNodeAddress", imageNodeAddress)
+
         val pendingIntent =
             PendingIntent.getActivity(context, reqCode, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+
         val notificationBuilder = NotificationCompat.Builder(context, channelId)
 
         notificationBuilder.setAutoCancel(true)
@@ -89,8 +95,6 @@ class FirebaseMessagingService : FirebaseMessagingService() {
             .setContentText(text)
             .setContentIntent(pendingIntent)
         notificationManager.notify(reqCode, notificationBuilder.build())
-
-        Logger.info("inside notification method - $reqCode")
     }
 
     private fun getProperTime(time: String): Long {

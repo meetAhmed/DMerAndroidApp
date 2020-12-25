@@ -37,6 +37,11 @@ object FireStoreReferences {
             .document(nodeAddress)
             .asSnapshotLiveData()
 
+    fun getImageData(nodeAddress: String) =
+        fireStore.collection(Constants.COLLECTION_IMAGES)
+            .document(nodeAddress)
+            .asSnapshotLiveData()
+
     fun userSharedImagesCollection(nodeAddress: String) =
         fireStore.collection(Constants.COLLECTION_IMAGES)
             .document(nodeAddress)

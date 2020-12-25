@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import com.d.mer.R
+import com.d.mer.ui.activities.MainActivity.Companion.mainActivityObject
 import com.d.mer.ui.common.Dialogs
 import com.d.mer.ui.common.Logger
 import com.google.firebase.auth.FirebaseAuth
@@ -36,7 +37,11 @@ class LoginActivity : AppCompatActivity() {
         firebaseAuth = FirebaseAuth.getInstance()
 
         if (firebaseAuth.currentUser != null) {
-            startActivity(Intent(applicationContext, MainActivity::class.java))
+            mainActivityObject?.finish()
+            val imageNodeAddress = intent.getStringExtra("imageNodeAddress") ?: ""
+            val intent = Intent(applicationContext, MainActivity::class.java)
+            intent.putExtra("imageNodeAddress", imageNodeAddress)
+            startActivity(intent)
             finish()
         }
 
@@ -90,7 +95,7 @@ class LoginActivity : AppCompatActivity() {
                 else -> {
                     Logger.info("Exception: $e")
                     e.localizedMessage?.let {
-                        Dialogs.showMessage(this@LoginActivity,it)
+                        Dialogs.showMessage(this@LoginActivity, it)
                     }
                 }
             }

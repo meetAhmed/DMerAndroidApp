@@ -1,6 +1,7 @@
 package com.d.mer.ui.activities
 
 import android.Manifest
+import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -36,6 +37,7 @@ import com.d.mer.ui.common.*
 import com.d.mer.ui.interfaces.AlertDialogInterface
 import com.d.mer.ui.interfaces.CategoryClickListener
 import com.d.mer.ui.interfaces.ImagesClickListener
+import com.d.mer.ui.interfaces.TimerEndedForImageListener
 import com.d.mer.ui.viewModels.MainActivityViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -43,6 +45,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.Target
+import org.json.JSONObject
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -83,12 +86,29 @@ class MainActivity : BaseActivity() {
         ViewModelProvider(this).get(MainActivityViewModel::class.java)
     }
 
+    private var showImageToWinnerNodeAddress = ""
+
+    companion object {
+        var mainActivityObject: MainActivity? = null
+    }
+
     /**
      * onCreate() Method
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        mainActivityObject?.finish()
+        mainActivityObject = this
+
+        showImageToWinnerNodeAddress = intent.getStringExtra("imageNodeAddress") ?: ""
+
+        if (showImageToWinnerNodeAddress.trim().isNotEmpty()) {
+            val intent = Intent(applicationContext, WinnerActivity::class.java)
+            intent.putExtra("nodeAddress", showImageToWinnerNodeAddress)
+            startActivity(intent)
+        }
 
         imagesAdapter = ImagesAdapter(listOfImages,
             object : ImagesClickListener {
@@ -103,8 +123,8 @@ class MainActivity : BaseActivity() {
 
                 }
 
-                override fun endTimer(imageModel: ImageModel, position: Int) {
-                    endTimerClicked(imageModel, position)
+                override fun endTimer(imageModel: ImageModel) {
+                    endTimerForImage(imageModel.nodeAddress)
                 }
             })
 
@@ -391,6 +411,21 @@ class MainActivity : BaseActivity() {
                 startActivity(Intent(applicationContext, LoginActivity::class.java))
                 finish()
             }
+            R.id.end_all_timers -> {
+                Dialogs.showMessage(
+                    this@MainActivity,
+                    getString(R.string.end_all_timers_check),
+                    getString(R.string.yes),
+                    getString(R.string.no),
+                    object : AlertDialogInterface {
+                        override fun positiveButtonClick() {
+                            endAllTimers()
+                        }
+
+                        override fun negativeButtonClick() {}
+                    }
+                )
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -408,8 +443,6 @@ class MainActivity : BaseActivity() {
                             document.data["id"]?.let { id ->
                                 categories.add(id as Long)
 
-                                Logger.info("node = $nodeAddress --- $categories")
-
                                 for (i in listOfImages.indices) {
                                     if (listOfImages[i].nodeAddress.trim()
                                             .equals(nodeAddress, false)
@@ -417,7 +450,6 @@ class MainActivity : BaseActivity() {
                                         listOfImages[i].categories = categories
                                         imagesAdapter.notifyDataSetChanged()
                                         imagesAdapter.applyFilter(listOfCategoriesForFilter)
-                                        Logger.info("${listOfImages[i]}")
                                         break
                                     }
                                 }
@@ -521,12 +553,16 @@ class MainActivity : BaseActivity() {
     }
 
     /**
-     * endTimerClicked() Method
+     * endTimerForImage() Method
      */
-    private fun endTimerClicked(imageModel: ImageModel, position: Int) {
+    private fun endTimerForImage(
+        nodeAddress: String,
+        listener: TimerEndedForImageListener? = null
+    ) {
+        Logger.info("endTimerForImage() - $nodeAddress")
         val sharedImagesList = ArrayList<SharedImageModel>()
         fireStore.collection(Constants.COLLECTION_IMAGES)
-            .document(imageModel.nodeAddress)
+            .document(nodeAddress)
             .collection(Constants.COLLECTION_USERS_SHARED_IMAGES)
             .get()
             .addOnSuccessListener { sharedDataResult ->
@@ -537,9 +573,11 @@ class MainActivity : BaseActivity() {
                     getString(R.string.no_image_shares)
                 } else {
                     if (sharedImagesList.size == 1) {
+                        sendNotificationToWinner(sharedImagesList[0].user, nodeAddress)
                         sharedImagesList[0].username
                     } else {
                         val random = Random().nextInt(sharedImagesList.size)
+                        sendNotificationToWinner(sharedImagesList[random].user, nodeAddress)
                         sharedImagesList[random].username
                     }
                 }
@@ -547,14 +585,16 @@ class MainActivity : BaseActivity() {
                 val imageData = HashMap<String, Any>()
                 imageData["winner"] = winner
 
-                listOfImages[position].winner = winner
-                imagesAdapter.notifyDataSetChanged()
-
                 fireStore.collection(Constants.COLLECTION_IMAGES)
-                    .document(imageModel.nodeAddress)
+                    .document(nodeAddress)
                     .update(imageData)
-                    .addOnSuccessListener { Logger.info("DocumentSnapshot - $imageData - successfully written") }
-                    .addOnFailureListener { e -> Logger.info("Error writing document - $imageData - $e") }
+                    .addOnSuccessListener {
+                        listener?.ended()
+                        Logger.info("DocumentSnapshot - $imageData - successfully written")
+                    }.addOnFailureListener { e ->
+                        listener?.ended()
+                        Logger.info("Error writing document - $imageData - $e")
+                    }
             }
     }
 
@@ -590,6 +630,93 @@ class MainActivity : BaseActivity() {
         timer = null
 
         super.onPause()
+    }
+
+    /**
+     * endAllTimers() Method
+     */
+    private fun endAllTimers() {
+        if (listOfImages.isEmpty()) {
+            Dialogs.showToast(applicationContext, getString(R.string.no_images))
+        } else {
+            val listOfNodeAddresses = ArrayList<String>()
+            listOfImages.forEach {
+                if (it.winner.trim().isEmpty()) {
+                    listOfNodeAddresses.add(it.nodeAddress)
+                }
+            }
+            val loadingDialog = Dialogs.loader(
+                this,
+                getString(R.string.end_timers_loading_dialog_message)
+            )
+            Thread {
+                endTimerForImage(listOfNodeAddresses, loadingDialog)
+            }.start()
+        }
+    }
+
+    /**
+     * endTimerForImage() Method
+     */
+    private fun endTimerForImage(listOfNodeAddresses: ArrayList<String>, loadingDialog: Dialog) {
+        Logger.info("endTimerForImage() $listOfNodeAddresses")
+        if (listOfNodeAddresses.isNotEmpty()) {
+            val nodeAddress = listOfNodeAddresses[0]
+            endTimerForImage(
+                nodeAddress,
+                object : TimerEndedForImageListener {
+                    override fun ended() {
+                        if (listOfNodeAddresses.isNotEmpty()) {
+                            listOfNodeAddresses.removeAt(0)
+                        }
+                        endTimerForImage(listOfNodeAddresses, loadingDialog)
+                    }
+                })
+        } else {
+            runOnUiThread {
+                if (loadingDialog.isShowing) {
+                    loadingDialog.dismiss()
+                }
+                Dialogs.showToast(
+                    applicationContext,
+                    getString(R.string.end_all_timers_success)
+                )
+            }
+        }
+    }
+
+    /**
+     * sendNotificationToWinner() Method
+     */
+    private fun sendNotificationToWinner(user: String, imageNodeAddress: String) {
+        fireStore.collection(Constants.COLLECTION_USERS).document(user).get().addOnSuccessListener {
+            it.toObject(UserModel::class.java)?.let { userModel ->
+                Logger.info("sendNotificationToWinner() $userModel")
+                viewModel.sendNotifications(
+                    getNotificationData(imageNodeAddress),
+                    userModel.token
+                )
+            }
+        }.addOnFailureListener {
+            Logger.info("sendNotificationToWinner() $it")
+        }
+    }
+
+    /**
+     * getNotificationData() Method
+     */
+    private fun getNotificationData(imageNodeAddress: String): JSONObject {
+        val jsonObject = JSONObject()
+        try {
+            jsonObject.put("title", getString(R.string.notification_title))
+            jsonObject.put("message", getString(R.string.notification_message_for_winner))
+            jsonObject.put("type", Constants.TO_WINNER)
+            jsonObject.put("imageNodeAddress", imageNodeAddress)
+            jsonObject.put("time", System.currentTimeMillis().toString())
+        } catch (e: Exception) {
+            Logger.info("getNotificationData() - $e")
+        }
+        return jsonObject
     }
 
 }

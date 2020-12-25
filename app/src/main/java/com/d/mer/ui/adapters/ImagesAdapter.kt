@@ -10,10 +10,10 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.d.mer.R
-import com.d.mer.ui.activities.FullScreenActivity
-import com.d.mer.ui.common.Store
 import com.d.mer.data.models.CategoryModel
 import com.d.mer.data.models.ImageModel
+import com.d.mer.ui.activities.FullScreenActivity
+import com.d.mer.ui.common.Store
 import com.d.mer.ui.interfaces.ImagesClickListener
 import com.squareup.picasso.Picasso
 
@@ -68,9 +68,7 @@ class ImagesAdapter(
 
         holder.finishView.setOnClickListener {
             holder.finishView.visibility = View.INVISIBLE
-            holder.timerEndedView.visibility = View.VISIBLE
-            holder.timerView.text = ""
-            listener.endTimer(list[position], position)
+            listener.endTimer(list[position])
         }
 
         if (list[position].winner.trim().isNotEmpty()) {

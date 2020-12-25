@@ -4,5 +4,5 @@ import com.d.mer.data.models.ImageModel
 
 interface ImagesClickListener {
     fun shareImage(imageModel: ImageModel)
-    fun endTimer(imageModel: ImageModel, position: Int)
+    fun endTimer(imageModel: ImageModel)
 }

@@ -18,6 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DMer"
         tools:ignore="AllowBackup">
+        <activity android:name=".ui.activities.WinnerActivity"></activity>
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
