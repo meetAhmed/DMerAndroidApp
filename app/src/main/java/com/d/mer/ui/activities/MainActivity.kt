@@ -1,7 +1,6 @@
 package com.d.mer.ui.activities
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -10,8 +9,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.*
-import android.view.inputmethod.InputMethodManager
+import android.view.Gravity
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -38,6 +39,7 @@ import com.d.mer.ui.interfaces.ImagesClickListener
 import com.d.mer.ui.viewModels.MainActivityViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.Target
@@ -81,6 +83,9 @@ class MainActivity : BaseActivity() {
         ViewModelProvider(this).get(MainActivityViewModel::class.java)
     }
 
+    /**
+     * onCreate() Method
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -197,8 +202,22 @@ class MainActivity : BaseActivity() {
             }
         })
 
+        getFirebaseToken()
+
     }
 
+    /**
+     * getFirebaseToken() Method
+     */
+    private fun getFirebaseToken() {
+        FirebaseMessaging.getInstance().token.addOnSuccessListener {
+            FireStoreReferences.uploadUserToken(it)
+        }
+    }
+
+    /**
+     * handleImageShareRequest() Method
+     */
     private fun handleImageShareRequest() {
         imageModelForSharing?.let { imageModel ->
 
@@ -277,6 +296,9 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    /**
+     * startImageShareIntent() Method
+     */
     private fun startImageShareIntent(imageUri: Uri) {
         try {
 
@@ -297,6 +319,9 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    /**
+     * saveSharedImage() Method
+     */
     private fun saveSharedImage() {
         imageModelForSharing?.let { imageModel ->
             FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
@@ -325,17 +350,26 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    /**
+     * applyFilterClicked() Method
+     */
     fun applyFilterClicked(view: View) {
         imagesAdapter.applyFilter(listOfCategoriesForFilter)
         filterView.visibility = View.GONE
         saveFilteredCategories(Gson().toJson(listOfCategoriesForFilter))
     }
 
+    /**
+     * onCreateOptionsMenu() Method
+     */
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_activity_menu, menu)
         return super.onCreateOptionsMenu(menu)
     }
 
+    /**
+     * onOptionsItemSelected() Method
+     */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.filter -> {
@@ -349,6 +383,9 @@ class MainActivity : BaseActivity() {
             R.id.shared_images -> {
                 startActivity(Intent(applicationContext, SharedImagesActivity::class.java))
             }
+            R.id.send_notifications -> {
+                startActivity(Intent(applicationContext, SendNotificationsActivity::class.java))
+            }
             R.id.log_out -> {
                 FirebaseAuth.getInstance().signOut()
                 startActivity(Intent(applicationContext, LoginActivity::class.java))
@@ -358,6 +395,9 @@ class MainActivity : BaseActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    /**
+     * getCategoriesForImage() Method
+     */
     private fun getCategoriesForImage(nodeAddress: String) {
         viewModel.categoriesForImageCollection(nodeAddress)
             .observe(this, { innerResults ->
@@ -389,6 +429,9 @@ class MainActivity : BaseActivity() {
             })
     }
 
+    /**
+     * saveFilteredCategories() Method
+     */
     private fun saveFilteredCategories(listStr: String) {
         val user = HashMap<String, Any>()
         user["filteredCategories"] = listStr
@@ -401,6 +444,9 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    /**
+     * getSelectedCategoriesForFilter() Method
+     */
     private fun getSelectedCategoriesForFilter(listStr: String?): ArrayList<CategoryModel> {
         val listToReturn = ArrayList<CategoryModel>()
         listStr?.let { str ->
@@ -416,6 +462,9 @@ class MainActivity : BaseActivity() {
         return listToReturn
     }
 
+    /**
+     * isAllPermissionsAllowed() Method
+     */
     private fun isAllPermissionsAllowed(): Boolean {
         return (PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(
             this, Manifest.permission.READ_EXTERNAL_STORAGE
@@ -424,6 +473,9 @@ class MainActivity : BaseActivity() {
         ))
     }
 
+    /**
+     * requestPermissions() Method
+     */
     private fun requestPermissions() {
         ActivityCompat.requestPermissions(
             this,
@@ -435,6 +487,9 @@ class MainActivity : BaseActivity() {
         )
     }
 
+    /**
+     * onRequestPermissionsResult() Method
+     */
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -465,6 +520,9 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    /**
+     * endTimerClicked() Method
+     */
     private fun endTimerClicked(imageModel: ImageModel, position: Int) {
         val sharedImagesList = ArrayList<SharedImageModel>()
         fireStore.collection(Constants.COLLECTION_IMAGES)
@@ -500,6 +558,9 @@ class MainActivity : BaseActivity() {
             }
     }
 
+    /**
+     * startTimer() Method
+     */
     private fun startTimer() {
         timer = Timer()
         timer?.scheduleAtFixedRate(object : TimerTask() {
@@ -512,29 +573,23 @@ class MainActivity : BaseActivity() {
         }, 0L, oneSecond)
     }
 
+    /**
+     * onResume() Method
+     */
     override fun onResume() {
         super.onResume()
 
         startTimer()
     }
 
+    /**
+     * onPause() Method
+     */
     override fun onPause() {
         timer?.cancel()
         timer = null
 
         super.onPause()
-    }
-
-    private fun hideKeyboard() {
-        currentFocus?.let { currentFocus ->
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(currentFocus.windowToken, 0)
-        }
-    }
-
-    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-        hideKeyboard()
-        return super.dispatchTouchEvent(ev)
     }
 
 }

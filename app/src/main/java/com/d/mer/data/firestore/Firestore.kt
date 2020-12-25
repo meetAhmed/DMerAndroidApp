@@ -21,6 +21,11 @@ object FireStoreReferences {
             .asSnapshotLiveData()
     }
 
+    val usersCollection by lazy {
+        fireStore.collection(Constants.COLLECTION_USERS)
+            .asSnapshotLiveData()
+    }
+
     fun categoriesForImageCollection(nodeAddress: String) =
         fireStore.collection(Constants.COLLECTION_IMAGES)
             .document(nodeAddress)
@@ -40,6 +45,17 @@ object FireStoreReferences {
 
     fun getLoggedUserId(): String? {
         return firebaseAuth.currentUser?.uid
+    }
+
+    fun uploadUserToken(token: String?) {
+        token?.let { tokenToUpload ->
+            getLoggedUserId()?.let { uid ->
+                val user = HashMap<String, Any>()
+                user["token"] = tokenToUpload
+                fireStore.collection(Constants.COLLECTION_USERS).document(uid)
+                    .update(user)
+            }
+        }
     }
 
 }

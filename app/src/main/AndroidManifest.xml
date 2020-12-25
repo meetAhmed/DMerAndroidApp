@@ -18,12 +18,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DMer"
         tools:ignore="AllowBackup">
-        <activity android:name="com.d.mer.ui.activities.SharedImagesActivity"/>
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification_icon" />
+
+        <activity android:name=".ui.activities.SendNotificationsActivity" />
+        <activity android:name=".ui.activities.SharedImagesActivity" />
         <activity
-            android:name="com.d.mer.ui.activities.CreateAccountActivity"
+            android:name=".ui.activities.CreateAccountActivity"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name="com.d.mer.ui.activities.LoginActivity"
+            android:name=".ui.activities.LoginActivity"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,10 +37,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.d.mer.ui.activities.FullScreenActivity" />
+        <activity android:name=".ui.activities.FullScreenActivity" />
         <activity
-            android:name="com.d.mer.ui.activities.MainActivity"
+            android:name=".ui.activities.MainActivity"
             android:configChanges="orientation|screenSize" />
+
+        <service
+            android:name=".data.services.FirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
         <provider
             android:name="androidx.core.content.FileProvider"

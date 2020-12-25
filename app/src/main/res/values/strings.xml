@@ -42,6 +42,15 @@
 
     <string name="data_loading_error">Something went wrong while loading data</string>
 
+    <string name="message">Message</string>
+    <string name="message_required">Please enter message</string>
+    <string name="notification_title">Notification from D Mer</string>
+    <string name="send_notifications">Send Notifications</string>
+    <string name="send_notifications_success">Notifications sent successfully</string>
+    <string name="no_tokens">Can not send notifications.\nThere is no token for any user in database.</string>
+    <string name="sending_notifications_loading_dialog_message">Sending Notifications - Please wait</string>
+
+    <string name="firebase_api_key" translatable="false">AAAAjckMwNU:APA91bELT2W3zuVbgcebtUwrG8rRx35hgFhVU3jbyEnmXysqPYAP0uY4T9n2nhkVwfTPEnQrv8CwzUkpYPWZ0_MicTI9udsRrMbo-swyfpznhKsnvcCwSb0c9WTJaHyVY-zZY6Dj3SZe</string>
     <string name="file_provider_name" translatable="false">.fileProvider</string>
 
 </resources>

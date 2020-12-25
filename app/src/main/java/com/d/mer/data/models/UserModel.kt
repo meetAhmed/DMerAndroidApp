@@ -7,5 +7,6 @@ data class UserModel(
     var email: String = "",
     var name: String = "",
     var password: String = "",
-    var filteredCategories: String = ""
+    var filteredCategories: String = "",
+    var token: String = ""
 )
